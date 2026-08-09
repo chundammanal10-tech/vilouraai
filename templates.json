@@ -1,0 +1,34 @@
+{
+  "templates": [
+    {
+      "name": "HVAC",
+      "categories": ["hvac", "heating", "cooling", "air conditioning"],
+      "subject": "AI Receptionist for {business_name}",
+      "body": "Hi {contact_name},\n\nI noticed {business_name} serves the Dallas area. Many HVAC companies miss calls during peak season, losing valuable customers.\n\nOur AI receptionist handles calls 24/7, books appointments, and never takes a break. It's like having a full-time receptionist at a fraction of the cost.\n\nWould you be open to a quick 10-minute demo? I can show you how it works for businesses like yours.\n\nBest regards,\nAdharsh John\nVilouraAI"
+    },
+    {
+      "name": "Restaurant",
+      "categories": ["restaurant", "food", "dining", "cafe", "tacos", "bbq"],
+      "subject": "Never Miss a Reservation at {business_name}",
+      "body": "Hi {contact_name},\n\nRunning a restaurant means juggling a million things at once. Missed calls mean missed reservations and lost revenue.\n\nOur AI receptionist takes reservations, answers questions about hours and menu, and handles takeout orders — all without keeping your staff from serving customers.\n\nCan I show you how it works? It takes just 10 minutes.\n\nBest,\nAdharsh John\nVilouraAI"
+    },
+    {
+      "name": "Medical",
+      "categories": ["medical", "dental", "clinic", "healthcare", "doctor"],
+      "subject": "AI Receptionist for {business_name}",
+      "body": "Hi {contact_name},\n\nHealthcare practices lose patients when calls go unanswered, especially after hours.\n\nOur AI receptionist books appointments, answers insurance questions, and provides basic information — HIPAA-compliant and available 24/7.\n\nWould you like to see a demo tailored for {business_name}?\n\nBest regards,\nAdharsh John\nVilouraAI"
+    },
+    {
+      "name": "Salon",
+      "categories": ["salon", "barber", "beauty", "spa"],
+      "subject": "AI Receptionist for {business_name}",
+      "body": "Hi {contact_name},\n\nSalons lose bookings when clients call during appointments. Our AI receptionist handles bookings, answers questions about services, and manages your schedule — all while you focus on clients.\n\nIt's like having a front desk person who never takes a break. Want to see it in action?\n\nBest,\nAdharsh John\nVilouraAI"
+    },
+    {
+      "name": "Real Estate",
+      "categories": ["real estate", "realtor", "property"],
+      "subject": "AI Receptionist for {business_name}",
+      "body": "Hi {contact_name},\n\nReal estate agents miss calls during showings and meetings. Each missed call could be your next big client.\n\nOur AI receptionist qualifies leads, books showings, and provides property information — all while you're with clients.\n\nWould you like a quick demo? It's perfect for busy agents like you.\n\nBest regards,\nAdharsh John\nVilouraAI"
+    }
+  ]
+}
