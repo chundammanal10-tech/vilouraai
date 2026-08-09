@@ -247,3 +247,36 @@ def create_subscription_checkout(plan_name: str = "Pro Developer", current_dev =
         cancel_url="https://vilouraai.com/cancel"
     )
     return checkout
+
+@app.get("/crm/metrics")
+def get_crm_metrics(current_dev = Depends(get_current_developer)):
+    # Connect to the email outreach leads DB
+    leads_db_path = "/home/ubuntu/email-agent/leads.db"
+    if not os.path.exists(leads_db_path):
+        return {"error": "Leads database not found"}
+        
+    conn = sqlite3.connect(leads_db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) as total FROM leads")
+    total_leads = cursor.fetchone()["total"]
+    
+    cursor.execute("SELECT COUNT(*) as sent FROM leads WHERE status = 'sent'")
+    sent_leads = cursor.fetchone()["sent"]
+    
+    cursor.execute("SELECT COUNT(*) as replied FROM leads WHERE status = 'replied'")
+    replied_leads = cursor.fetchone()["replied"]
+    
+    conn.close()
+    
+    conversion_rate = (replied_leads / sent_leads * 100) if sent_leads > 0 else 0.0
+    
+    return {
+        "pipeline_metrics": {
+            "total_leads": total_leads,
+            "emails_sent": sent_leads,
+            "replies_received": replied_leads,
+            "conversion_rate_percent": round(conversion_rate, 2)
+        }
+    }
