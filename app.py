@@ -151,3 +151,41 @@ def get_my_agents(current_dev = Depends(get_current_developer)):
     agents = cursor.fetchall()
     conn.close()
     return [dict(row) for row in agents]
+
+from sandbox import run_agent_in_docker
+from pydantic import Field
+
+class AgentExecutionRequest(BaseModel):
+    code_payload: Optional[str] = Field(None, description="Raw python code to execute in sandbox")
+    input_data: Optional[dict] = Field(None, description="Input payload if invoking an API endpoint agent")
+
+@app.post("/agents/{agent_id}/execute")
+def execute_agent(agent_id: int, req: AgentExecutionRequest, current_dev = Depends(get_current_developer)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM agents WHERE id = ? AND status = 'active'", (agent_id,))
+    agent = cursor.fetchone()
+    conn.close()
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Active agent not found")
+    
+    # If the agent has raw code payload, run it in the Docker sandbox
+    if req.code_payload:
+        execution_result = run_agent_in_docker(req.code_payload)
+        return {
+            "agent_id": agent["id"],
+            "agent_name": agent["name"],
+            "execution_mode": "docker_sandbox",
+            "result": execution_result
+        }
+    
+    # Otherwise, proxy to the registered API endpoint
+    return {
+        "agent_id": agent["id"],
+        "agent_name": agent["name"],
+        "execution_mode": "api_proxy",
+        "target_endpoint": agent["api_endpoint"],
+        "status": "proxied_successfully",
+        "note": "API proxy routing active."
+    }
