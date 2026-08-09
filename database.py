@@ -46,3 +46,44 @@ def init_db():
 
 if __name__ == "__main__":
     init_db()
+
+def init_billing_tables():
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    # Usage Metering Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS usage_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            developer_id INTEGER,
+            agent_id INTEGER,
+            user_email TEXT,
+            tokens_used INTEGER DEFAULT 0,
+            cost REAL DEFAULT 0.0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (developer_id) REFERENCES developers (id),
+            FOREIGN KEY (agent_id) REFERENCES agents (id)
+        )
+    """)
+    
+    # Subscriptions & Stripe Customers Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS subscriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            developer_id INTEGER,
+            stripe_customer_id TEXT,
+            stripe_subscription_id TEXT,
+            plan_tier TEXT DEFAULT 'free',
+            status TEXT DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (developer_id) REFERENCES developers (id)
+        )
+    """)
+    
+    conn.commit()
+    conn.close()
+    print("Billing tables initialized successfully.")
+
+if __name__ == "__main__":
+    init_db()
+    init_billing_tables()

@@ -189,3 +189,61 @@ def execute_agent(agent_id: int, req: AgentExecutionRequest, current_dev = Depen
         "status": "proxied_successfully",
         "note": "API proxy routing active."
     }
+
+from billing import record_usage, calculate_payout, create_stripe_checkout
+
+class ExecutionWithMeteringRequest(AgentExecutionRequest):
+    tokens_used: Optional[int] = Field(100, description="Tokens consumed during execution")
+    user_email: Optional[str] = Field("client@vilouraai.com", description="Calling user email")
+
+@app.post("/agents/{agent_id}/execute-metered")
+def execute_agent_metered(agent_id: int, req: ExecutionWithMeteringRequest, current_dev = Depends(get_current_developer)):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM agents WHERE id = ? AND status = 'active'", (agent_id,))
+    agent = cursor.fetchone()
+    conn.close()
+    
+    if not agent:
+        raise HTTPException(status_code=404, detail="Active agent not found")
+    
+    # Record usage metering & split calculation
+    metering_data = record_usage(
+        developer_id=agent["developer_id"],
+        agent_id=agent["id"],
+        user_email=req.user_email,
+        tokens_used=req.tokens_used
+    )
+    
+    payout_summary = calculate_payout(agent["developer_id"])
+    
+    # Run sandbox if code payload provided
+    execution_result = None
+    if req.code_payload:
+        execution_result = run_agent_in_docker(req.code_payload)
+        
+    return {
+        "agent_id": agent["id"],
+        "agent_name": agent["name"],
+        "metering": metering_data,
+        "financial_summary": payout_summary,
+        "sandbox_execution": execution_result
+    }
+
+@app.get("/developer/earnings")
+def get_developer_earnings(current_dev = Depends(get_current_developer)):
+    summary = calculate_payout(current_dev["id"])
+    return {
+        "developer_email": current_dev["email"],
+        "earnings": summary
+    }
+
+@app.post("/billing/create-subscription")
+def create_subscription_checkout(plan_name: str = "Pro Developer", current_dev = Depends(get_current_developer)):
+    checkout = create_stripe_checkout(
+        developer_email=current_dev["email"],
+        plan_name=plan_name,
+        success_url="https://vilouraai.com/success",
+        cancel_url="https://vilouraai.com/cancel"
+    )
+    return checkout
